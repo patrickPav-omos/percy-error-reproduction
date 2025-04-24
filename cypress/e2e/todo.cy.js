@@ -1,43 +1,26 @@
-describe('TodoMVC', function() {
-  beforeEach(function() {
-    // Load our app before starting each test case
-    cy.visit('localhost:8000')
-  })
+describe('Percy Error Reproduction', () => {
+	// Run before each test to set the viewport and visit the homepage
+	beforeEach(() => {
+		cy.viewport(1920, 1080);
+	});
 
-  it('Loads the TodoMVC app', function() {
-    cy.get('.todoapp').should('exist')
-    cy.percySnapshot()
-  })
+	it('should take a snapshot in the checkout', () => {
+		cy.visit('https://metaflow.de/products/metaflow-shaker');
+		// Allow time for dynamic elements to load
+		cy.wait(4000);
 
-  it('With no todos, hides main section and footer', function() {
-    cy.get('.main').should('not.be.visible');
-    cy.get('.footer').should('not.be.visible');
-  })
+		// Add product to the cart by clicking the "In den Warenkorb" button
+		cy.contains('In den Warenkorb', { matchCase: false }).click({ force: true });
 
-  it('Accepts a new todo', function() {
-    // Before adding a todo, we should have none.
-    cy.get('.todo-count').should('contain', '0 items left')
-    cy.get('.todo-list').children('li').should('have.length', 0)
+		// Wait for the cart to load
+		cy.wait(3000);
 
-    // Add a new todo item.
-    cy.get('.new-todo').should('exist')
-    cy.get('.new-todo').type('New fancy todo {enter}')
-    // Take a Percy snapshot with different browser widths.
-    cy.percySnapshot('New todo test')
+		// Proceed to checkout by clicking the "Zur Kasse" button
+		cy.contains('Zur Kasse').click();
 
-    // We should have 1 todo item showing in the todo list and the footer.
-    cy.get('.todo-list').children('li').should('have.length', 1)
-    cy.get('.todo-count').should('contain', '1 item left')
-  })
+		cy.wait(8000); // Ensure elements are loaded before snapshot
 
-  it('Lets you check off a todo', function() {
-    // Enter a new todo.
-    cy.get('.new-todo').type('A thing to accomplish {enter}')
-    cy.get('.todo-count').should('contain', '1 item left')
-
-    // Click it off -- it should be marked as completed.
-    cy.get('.toggle').click()
-    cy.get('.todo-count').should('contain', '0 items left')
-    cy.percySnapshot()
-  })
-})
+		// Take Percy snapshot of the checkout page
+		cy.percySnapshot('Error-Reproduction-Checkout');
+	});
+});
